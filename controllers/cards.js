@@ -6,7 +6,7 @@ const getAllCards = (req, res) => {
     .catch((err) => {
       console.log(err);
       res.status(500).send(err.message);
-    })
+    });
 };
 
 const createCard = (req, res) => {
@@ -23,13 +23,41 @@ const deleteCardById = (req, res) => {
   const { cardId } = req.params;
   Cards.findByIdAndDelete(cardId)
     .orFail(() => {
-      res.status(404).send("Not found");
+      res.status(404).send('Not found');
     })
     .then((card) => res.send(card))
     .catch((err) => {
       console.log(err);
       res.status(500).send(err.message);
-    })
+    });
 };
 
-module.exports = { getAllCards, createCard, deleteCardById };
+const putCardLike = (req, res) => {
+  const { cardId } = req.params;
+  Cards.findByIdAndUpdate(cardId, { $addToSet: { likes: req.user._id } }, { new: true })
+    .orFail(() => {
+      res.status(404).send('Not found');
+    })
+    .then((card) => res.send(card))
+    .catch((err) => {
+      console.log(err);
+      res.status(500).send(err.message);
+    });
+};
+
+const deleteCardLike = (req, res) => {
+  const { cardId } = req.params;
+  Cards.findByIdAndUpdate(cardId, { $pull: { likes: req.user._id } }, { new: true })
+    .orFail(() => {
+      res.status(404).send('Not found');
+    })
+    .then((card) => res.send(card))
+    .catch((err) => {
+      console.log(err);
+      res.status(500).send(err.message);
+    });
+};
+
+module.exports = {
+  getAllCards, createCard, deleteCardById, putCardLike, deleteCardLike,
+};
