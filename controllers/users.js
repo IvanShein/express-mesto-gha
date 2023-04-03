@@ -33,9 +33,8 @@ const createUser = (req, res) => {
 };
 
 const updateUser = (req, res) => {
-  const { userId } = req.params;
   const { name, about } = req.body;
-  Users.findByIdAndUpdate(userId, { name, about }, { new: true })
+  Users.findByIdAndUpdate(req.user._id, { name, about }, { new: true })
     .orFail(() => {
       res.status(404).send('User not found');
     })
@@ -47,9 +46,8 @@ const updateUser = (req, res) => {
 };
 
 const updateAvatar = (req, res) => {
-  const { userId } = req.params;
   const { avatar } = req.body;
-  Users.findByIdAndUpdate(userId, { avatar }, { new: true })
+  Users.findByIdAndUpdate(req.user._id, { avatar }, { new: true })
     .orFail(() => {
       res.status(404).send('User not found');
     })
