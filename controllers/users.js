@@ -1,31 +1,34 @@
-const User = require('../models/user');
+const Users = require('../models/user');
 
-const getAllUsers = async (req, res) => {
-  const users = await User.find({});
-
-  res.send(users);
-};
-
-const getUserById = async (req, res) => {
-  const { userId } = req.params;
-
-  const user = await User.findById(userId);
-
-  res.send(user);
-};
-
-const createUser = async (req, res) => {
-  const { name, about, avatar } = req.body;
-
-  User.create({ name, about, avatar })
-    .then((user) => {
-      res.send(user);
-    })
+const getAllUsers = (req, res) => {
+  Users.find({})
+    .then((users) => res.send(users))
     .catch((err) => {
       console.log(err);
+      res.status(500).send(err.message);
+    })
+};
 
-      res.status(500);
-      res.send(err.message);
+const getUserById = (req, res) => {
+  const { userId } = req.params;
+  Users.findById(userId)
+    .orFail(() => {
+      res.status(404).send("Not found");
+    })
+    .then((user) => res.send(user))
+    .catch((err) => {
+      console.log(err);
+      res.status(500).send(err.message);
+    })
+};
+
+const createUser = (req, res) => {
+  const { name, about, avatar } = req.body;
+  Users.create({ name, about, avatar })
+    .then((user) => res.send(user))
+    .catch((err) => {
+      console.log(err);
+      res.status(500).send(err.message);
     });
 };
 
