@@ -4,7 +4,6 @@ const getAllUsers = (req, res) => {
   Users.find({})
     .then((users) => res.send(users))
     .catch((err) => {
-      console.log(err);
       res.status(500).send(err.message);
     });
 };
@@ -13,11 +12,10 @@ const getUserById = (req, res) => {
   const { userId } = req.params;
   Users.findById(userId)
     .orFail(() => {
-      res.status(404).send('User not found');
+      res.status(404).send({ message: 'Пользователь по указанному _id не найден' });
     })
     .then((user) => res.send(user))
     .catch((err) => {
-      console.log(err);
       res.status(500).send(err.message);
     });
 };
@@ -27,7 +25,10 @@ const createUser = (req, res) => {
   Users.create({ name, about, avatar })
     .then((user) => res.send(user))
     .catch((err) => {
-      console.log(err);
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Переданы некорректные данные при создании пользователя' });
+        return;
+      }
       res.status(500).send(err.message);
     });
 };
@@ -36,11 +37,14 @@ const updateUser = (req, res) => {
   const { name, about } = req.body;
   Users.findByIdAndUpdate(req.user._id, { name, about }, { new: true })
     .orFail(() => {
-      res.status(404).send('User not found');
+      res.status(404).send({ message: 'Пользователь с указанным _id не найден' });
     })
     .then((user) => res.send(user))
     .catch((err) => {
-      console.log(err);
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Переданы некорректные данные при обновлении профиля' });
+        return;
+      }
       res.status(500).send(err.message);
     });
 };
@@ -49,11 +53,14 @@ const updateAvatar = (req, res) => {
   const { avatar } = req.body;
   Users.findByIdAndUpdate(req.user._id, { avatar }, { new: true })
     .orFail(() => {
-      res.status(404).send('User not found');
+      res.status(404).send({ message: 'Пользователь с указанным _id не найден' });
     })
     .then((user) => res.send(user))
     .catch((err) => {
-      console.log(err);
+      if (err.name === 'CastError') {
+        res.status(400).send({ message: 'Переданы некорректные данные при обновлении аватара' });
+        return;
+      }
       res.status(500).send(err.message);
     });
 };
