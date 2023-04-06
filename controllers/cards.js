@@ -30,7 +30,7 @@ const deleteCardById = (req, res) => {
       if (card) {
         res.send(card);
       } else {
-        res.status(404).send({ message: 'Карточка с указанным _id не найдена' });
+        res.status(400).send({ message: 'Карточка с указанным _id не найдена' });
       }
     })
     .catch((err) => {
@@ -83,7 +83,7 @@ const deleteCardLike = (req, res) => {
     })
     .catch((err) => {
       if (err instanceof mongoose.Error.CastError) {
-        res.status(400).send({ message: 'Переданы некорректные данные для снятия лайка' });
+        res.status(404).send({ message: 'Переданы некорректные данные для снятия лайка' });
         return;
       }
       res.status(500).send({ message: `Ошибка на сервере ${err.name}: ${err.message}` });
