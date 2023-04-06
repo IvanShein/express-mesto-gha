@@ -78,7 +78,7 @@ const deleteCardLike = (req, res) => {
       if (card) {
         res.send(card);
       } else {
-        res.status(404).send({ message: 'Передан несуществующий_id карточки' });
+        res.status(400).send({ message: 'Передан несуществующий_id карточки' });
       }
     })
     .catch((err) => {
