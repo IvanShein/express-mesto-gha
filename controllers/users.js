@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Users = require('../models/user');
+const bcrypt = require('bcryptjs');
 
 const getAllUsers = (req, res) => {
   Users.find({})
@@ -29,9 +30,19 @@ const getUserById = (req, res) => {
 };
 
 const createUser = (req, res) => {
-  const { name, about, avatar } = req.body;
-  Users.create({ name, about, avatar })
-    .then((user) => res.status(201).send(user))
+  const { name, about, avatar, email, password } = req.body;
+  bcrypt.hash(password, 10)
+  .then(hash => {
+  Users.create({ name, about, avatar, email, password: hash })
+    .then((user) => {
+      res.status(201).send({
+        _id: user._id,
+        name: user.name,
+        about: user.about,
+        avatar: user.avatar,
+        email: user.email,
+      })
+    })
     .catch((err) => {
       if (err instanceof mongoose.Error.ValidationError) {
         res.status(400).send({ message: 'Переданы некорректные данные при создании пользователя' });
@@ -39,7 +50,7 @@ const createUser = (req, res) => {
       }
       res.status(500).send({ message: `Ошибка на сервере ${err.name}: ${err.message}` });
     });
-};
+});
 
 const updateUser = (req, res) => {
   const { name, about } = req.body;
