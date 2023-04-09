@@ -68,7 +68,6 @@ const createUser = async (req, res) => {
             about: user.about,
             avatar: user.avatar,
             email: user.email,
-            password: user.password,
           });
         })
         .catch((err) => {
