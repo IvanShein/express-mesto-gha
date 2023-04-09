@@ -30,11 +30,15 @@ const getUserById = (req, res) => {
     });
 };
 
-const createUser = (req, res) => {
+const createUser = async (req, res) => {
   const { name, about, avatar, email, password } = req.body;
+  if(!password) {
+    res.status(400).send({ message: 'Переданы некорректные данные при создании пользователя' });
+    return;
+  };
   bcrypt.hash(password, 10)
-    .then(hash => {
-      Users.create({ name, about, avatar, email, password: hash })
+    .then((hash) => {
+      Users.create({ name, about, avatar, email, password: hash, })
         .then((user) => {
           res.status(201).send({
             _id: user._id,
@@ -42,16 +46,17 @@ const createUser = (req, res) => {
             about: user.about,
             avatar: user.avatar,
             email: user.email,
+            password: user.password,
           })
         })
         .catch((err) => {
           if (err instanceof mongoose.Error.ValidationError) {
-            res.status(400).send({ message: 'Переданы некорректные данные при создании пользователя' });
+            res.status(400).send({ message: `Переданы некорректные данные при создании пользователя: ${err.message}` });
             return;
           }
           res.status(500).send({ message: `Ошибка на сервере ${err.name}: ${err.message}` });
         });
-    });
+    })};
 
   const updateUser = (req, res) => {
     const { name, about } = req.body;
@@ -65,7 +70,7 @@ const createUser = (req, res) => {
       })
       .catch((err) => {
         if (err instanceof mongoose.Error.ValidationError) {
-          res.status(400).send({ message: 'Переданы некорректные данные при обновлении профиля' });
+          res.status(400).send({ message: `Переданы некорректные данные при обновлении профиля: ${err.message}` });
           return;
         }
         res.status(500).send({ message: `Ошибка на сервере ${err.name}: ${err.message}` });
@@ -93,17 +98,10 @@ const createUser = (req, res) => {
 
   const login = (req, res) => {
     const { email, password } = req.body;
-
     return User.findUserByCredentials(email, password)
       .then((user) => {
-
-        const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: 7d });
-
-        res.cookie('jwt', token, {
-          maxAge: 3600000 * 24 * 7,
-          httpOnly: true
-        })
-          .end();
+        const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
+        res.send({ token });
       })
       .catch((err) => {
         res
@@ -113,5 +111,5 @@ const createUser = (req, res) => {
   };
 
   module.exports = {
-    getAllUsers, getUserById, createUser, updateUser, updateAvatar,
+    getAllUsers, getUserById, createUser, updateUser, updateAvatar, login,
   };
