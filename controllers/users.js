@@ -23,7 +23,25 @@ const getUserById = (req, res) => {
     })
     .catch((err) => {
       if (err instanceof mongoose.Error.CastError) {
-        res.status(400).send({ message: 'Пользователь по указанному _id не найден' });
+        res.status(400).send({ message: 'Некорректный запрос по id, пользователь не найден' });
+        return;
+      }
+      res.status(500).send({ message: `Ошибка на сервере ${err.name}: ${err.message}` });
+    });
+};
+
+const getCurrentUser = async (req, res) => {
+  Users.findById(req.user._id)
+    .then((user) => {
+      if (user) {
+        res.send(user);
+      } else {
+        res.status(404).send({ message: `Пользователь по указанному _id не найден` });
+      }
+    })
+    .catch((err) => {
+      if (err instanceof mongoose.Error.CastError) {
+        res.status(400).send({ message: `Некорректный запрос по id: пользователь не найден` });
         return;
       }
       res.status(500).send({ message: `Ошибка на сервере ${err.name}: ${err.message}` });
@@ -111,5 +129,5 @@ const createUser = async (req, res) => {
   };
 
   module.exports = {
-    getAllUsers, getUserById, createUser, updateUser, updateAvatar, login,
+    getAllUsers, getUserById, createUser, updateUser, updateAvatar, login, getCurrentUser,
   };
