@@ -25,13 +25,19 @@ const createCard = (req, res) => {
 
 const deleteCardById = (req, res) => {
   const { cardId } = req.params;
-  Cards.findByIdAndDelete(cardId)
+  Cards.findById(cardId)
     .then((card) => {
-      if (card) {
-        res.send(card);
-      } else {
+      if (!card) {
         res.status(404).send({ message: 'Карточка с указанным _id не найдена' });
       }
+      if (req.user._id === card.owner.toString()) {
+        card.deleteOne()
+        .then(() => res.send({ data: card }))
+      }
+      else {
+        res.status(403).send({ message: 'Нет прав на удаление карточки, созданой другим пользователем' });
+      }
+      res.send(card);
     })
     .catch((err) => {
       if (err instanceof mongoose.Error.CastError) {
