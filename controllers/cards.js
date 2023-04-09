@@ -32,9 +32,8 @@ const deleteCardById = (req, res) => {
       }
       if (req.user._id === card.owner.toString()) {
         card.deleteOne()
-        .then(() => res.send({ data: card }))
-      }
-      else {
+          .then(() => res.send({ data: card }));
+      } else {
         res.status(403).send({ message: 'Нет прав на удаление карточки, созданой другим пользователем' });
       }
       res.send(card);
