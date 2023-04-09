@@ -18,14 +18,6 @@ mongoose
     console.log(`Error during connection with DB ${error}`);
   });
 
-  app.use((req, res, next) => {
-  req.user = {
-    _id: '642af7416c984cbff216fcd3',
-  };
-
-  next();
-});
-
 app.post('/signin', login);
 app.post('/signup', createUser);
 
