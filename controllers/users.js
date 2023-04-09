@@ -106,7 +106,6 @@ const createUser = (req, res) => {
           .end();
       })
       .catch((err) => {
-        // ошибка аутентификации
         res
           .status(401)
           .send({ message: err.message });

@@ -16,7 +16,7 @@ mongoose
     console.log(`Error during connection with DB ${error}`);
   });
 
-app.use((req, res, next) => {
+  app.use((req, res, next) => {
   req.user = {
     _id: '642af7416c984cbff216fcd3',
     // _id: '642ab7c8dd376e1fc5bf3f07',
@@ -24,6 +24,9 @@ app.use((req, res, next) => {
 
   next();
 });
+
+app.post('/signin', login);
+app.post('/signup', createUser);
 
 app.use('/users', require('./routes/users'));
 app.use('/cards', require('./routes/cards'));
