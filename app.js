@@ -1,6 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const { errors } = require('celebrate');
+const { errors, celebrate, Joi } = require('celebrate');
 const { createUser, login } = require('./controllers/users');
 const { auth } = require('./middlewares/auth');
 
@@ -19,8 +19,30 @@ mongoose
     console.log(`Error during connection with DB ${error}`);
   });
 
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.post(
+  '/signin',
+  celebrate({
+    body: Joi.object().keys({
+      email: Joi.string().email().required(),
+      password: Joi.string().required(),
+    }),
+  }),
+  login,
+);
+
+app.post(
+  '/signup',
+  celebrate({
+    body: Joi.object().keys({
+      name: Joi.string().min(2).max(30),
+      about: Joi.string().min(2).max(30),
+      avatar: Joi.string().min(2),
+      email: Joi.string().email().required(),
+      password: Joi.string().required(),
+    }),
+  }),
+  createUser,
+);
 
 app.use(auth);
 
