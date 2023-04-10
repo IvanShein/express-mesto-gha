@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const { errors, celebrate, Joi } = require('celebrate');
 const { createUser, login } = require('./controllers/users');
 const { auth } = require('./middlewares/auth');
+const regexpUrl = require('./utils/constants');
 
 const { PORT = 3000 } = process.env;
 
@@ -36,7 +37,7 @@ app.post(
     body: Joi.object().keys({
       name: Joi.string().min(2).max(30),
       about: Joi.string().min(2).max(30),
-      avatar: Joi.string().min(2),
+      avatar: Joi.string().pattern(regexpUrl),
       email: Joi.string().email().required(),
       password: Joi.string().required(),
     }),
