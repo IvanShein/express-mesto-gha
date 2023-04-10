@@ -2,9 +2,9 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Users = require('../models/user');
-const { BadRequestError } = require('../errors/bad-request-err');
-const { NotFoundError } = require('../errors/not-found-err');
-const { ConflictError } = require('../errors/conflict-err');
+const BadRequestError = require('../errors/bad-request-err');
+const NotFoundError = require('../errors/not-found-err');
+const ConflictError = require('../errors/conflict-err');
 
 const getAllUsers = (req, res, next) => {
   Users.find({})
@@ -31,7 +31,7 @@ const getUserById = (req, res, next) => {
     });
 };
 
-const getCurrentUser = async (req, res, next) => {
+const getCurrentUser = (req, res, next) => {
   Users.findById(req.user._id)
     .then((user) => {
       if (user) {
@@ -49,12 +49,12 @@ const getCurrentUser = async (req, res, next) => {
     });
 };
 
-const createUser = async (req, res, next) => {
+const createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
   if (!password) {
-    throw new BadRequestError('Переданы некорректные данные при создании пользователя');
+    throw new BadRequestError('Переданы некорректные данные при создании пользователя ХА');
   }
   bcrypt.hash(password, 10)
     .then((hash) => {
@@ -75,7 +75,7 @@ const createUser = async (req, res, next) => {
             next(new ConflictError('Пользователь с данным email уже зарегистрирован'));
           } else
           if (err instanceof mongoose.Error.ValidationError) {
-            next(new BadRequestError('Переданы некорректные данные при создании пользователя'));
+            next(new BadRequestError('Переданы некорректные данные при создании пользователя ЖО'));
           } else {
             next(err);
           }
@@ -95,7 +95,7 @@ const updateUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err instanceof mongoose.Error.ValidationError) {
-        next(new BadRequestError('Переданы некорректные данные при обновлении профиля'));
+        return next(new BadRequestError('Переданы некорректные данные при обновлении профиля'));
       } else {
         next(err);
       }

@@ -1,17 +1,18 @@
 const router = require('express').Router();
-const { celebrate, Joi } = require('celebrate');
+// const { celebrate, Joi } = require('celebrate');
 const {
   getAllCards, createCard, deleteCardById, putCardLike, deleteCardLike,
 } = require('../controllers/cards');
 
 router.get('/', getAllCards);
+router.post('/', createCard);
 
-router.post('/', celebrate({
-  body: Joi.object().keys({
-    name: Joi.string().required().min(2).max(30),
-    link: Joi.string().required().min(2),
-  }),
-}), createCard);
+// router.post('/', celebrate({
+//   body: Joi.object().keys({
+//     name: Joi.string().required().min(2).max(30),
+//     link: Joi.string().required().min(2),
+//   }),
+// }), createCard);
 
 router.delete('/:cardId', deleteCardById);
 router.put('/:cardId/likes', putCardLike);

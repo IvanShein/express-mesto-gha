@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 const Cards = require('../models/card');
-const { BadRequestError } = require('../errors/bad-request-err');
-const { ForbiddenError } = require('../errors/forbidden-err');
-const { NotFoundError } = require('../errors/not-found-err');
+const BadRequestError = require('../errors/bad-request-err');
+const ForbiddenError = require('../errors/forbidden-err');
+const NotFoundError = require('../errors/not-found-err');
 
 const getAllCards = (req, res, next) => {
   Cards.find({})
@@ -30,14 +30,13 @@ const deleteCardById = (req, res, next) => {
     .then((card) => {
       if (!card) {
         throw new NotFoundError('Карточка с указанным _id не найдена');
-      }
-      if (req.user._id === card.owner.toString()) {
-        card.deleteOne()
-          .then(() => res.send({ data: card }));
-      } else {
-        throw new ForbiddenError('Нет прав на удаление карточки, созданой другим пользователем');
-      }
-      res.send(card);
+      } else
+        if (req.user._id === card.owner.toString()) {
+          card.deleteOne()
+            .then(() => res.send({ data: card }));
+        } else {
+          throw new ForbiddenError('Нет прав на удаление карточки, созданой другим пользователем');
+        }
     })
     .catch((err) => {
       if (err instanceof mongoose.Error.CastError) {
