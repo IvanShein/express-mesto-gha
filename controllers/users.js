@@ -54,7 +54,7 @@ const createUser = (req, res, next) => {
     name, about, avatar, email, password,
   } = req.body;
   if (!password) {
-    throw new BadRequestError('Переданы некорректные данные при создании пользователя ХА');
+    throw new BadRequestError('Переданы некорректные данные при создании пользователя');
   }
   bcrypt.hash(password, 10)
     .then((hash) => {
@@ -75,7 +75,7 @@ const createUser = (req, res, next) => {
             next(new ConflictError('Пользователь с данным email уже зарегистрирован'));
           } else
           if (err instanceof mongoose.Error.ValidationError) {
-            next(new BadRequestError('Переданы некорректные данные при создании пользователя ЖО'));
+            next(new BadRequestError('Переданы некорректные данные при создании пользователя'));
           } else {
             next(err);
           }
@@ -95,7 +95,7 @@ const updateUser = (req, res, next) => {
     })
     .catch((err) => {
       if (err instanceof mongoose.Error.ValidationError) {
-        return next(new BadRequestError('Переданы некорректные данные при обновлении профиля'));
+        next(new BadRequestError('Переданы некорректные данные при обновлении профиля'));
       } else {
         next(err);
       }
