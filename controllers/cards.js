@@ -4,14 +4,14 @@ const { BadRequestError } = require('../errors/bad-request-err');
 const { ForbiddenError } = require('../errors/forbidden-err');
 const { NotFoundError } = require('../errors/not-found-err');
 
-const getAllCards = (req, res) => {
+const getAllCards = (req, res, next) => {
   Cards.find({})
     .populate(['owner', 'likes'])
     .then((cards) => res.send(cards))
     .catch(next);
 };
 
-const createCard = (req, res) => {
+const createCard = (req, res, next) => {
   const { name, link } = req.body;
   Cards.create({ name, link, owner: req.user._id })
     .then((card) => res.status(201).send(card))
@@ -24,7 +24,7 @@ const createCard = (req, res) => {
     });
 };
 
-const deleteCardById = (req, res) => {
+const deleteCardById = (req, res, next) => {
   const { cardId } = req.params;
   Cards.findById(cardId)
     .then((card) => {
@@ -48,7 +48,7 @@ const deleteCardById = (req, res) => {
     });
 };
 
-const putCardLike = (req, res) => {
+const putCardLike = (req, res, next) => {
   const { cardId } = req.params;
   Cards.findByIdAndUpdate(
     cardId,
@@ -72,7 +72,7 @@ const putCardLike = (req, res) => {
     });
 };
 
-const deleteCardLike = (req, res) => {
+const deleteCardLike = (req, res, next) => {
   const { cardId } = req.params;
   Cards.findByIdAndUpdate(
     cardId,

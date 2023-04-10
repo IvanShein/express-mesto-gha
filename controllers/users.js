@@ -3,17 +3,16 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Users = require('../models/user');
 const { BadRequestError } = require('../errors/bad-request-err');
-const { UnauthorizedError } = require('../errors/unauthorized-err');
 const { NotFoundError } = require('../errors/not-found-err');
 const { ConflictError } = require('../errors/conflict-err');
 
-const getAllUsers = (req, res) => {
+const getAllUsers = (req, res, next) => {
   Users.find({})
     .then((users) => res.send(users))
     .catch(next);
 };
 
-const getUserById = (req, res) => {
+const getUserById = (req, res, next) => {
   const { userId } = req.params;
   Users.findById(userId)
     .then((user) => {
@@ -32,7 +31,7 @@ const getUserById = (req, res) => {
     });
 };
 
-const getCurrentUser = async (req, res) => {
+const getCurrentUser = async (req, res, next) => {
   Users.findById(req.user._id)
     .then((user) => {
       if (user) {
@@ -50,7 +49,7 @@ const getCurrentUser = async (req, res) => {
     });
 };
 
-const createUser = async (req, res) => {
+const createUser = async (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
@@ -84,7 +83,7 @@ const createUser = async (req, res) => {
     });
 };
 
-const updateUser = (req, res) => {
+const updateUser = (req, res, next) => {
   const { name, about } = req.body;
   Users.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .then((user) => {
@@ -103,7 +102,7 @@ const updateUser = (req, res) => {
     });
 };
 
-const updateAvatar = (req, res) => {
+const updateAvatar = (req, res, next) => {
   const { avatar } = req.body;
   Users.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .then((user) => {
@@ -122,16 +121,14 @@ const updateAvatar = (req, res) => {
     });
 };
 
-const login = (req, res) => {
+const login = (req, res, next) => {
   const { email, password } = req.body;
   return Users.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
       res.send({ token });
     })
-    .catch((err) => {
-      next(new UnauthorizedError(err.message));
-    });
+    .catch(next);
 };
 
 module.exports = {
