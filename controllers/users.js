@@ -2,13 +2,15 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const Users = require('../models/user');
+const { BadRequestError } = require('../errors/bad-request-err');
+const { UnauthorizedError } = require('../errors/unauthorized-err');
+const { NotFoundError } = require('../errors/not-found-err');
+const { ConflictError } = require('../errors/conflict-err');
 
 const getAllUsers = (req, res) => {
   Users.find({})
     .then((users) => res.send(users))
-    .catch((err) => {
-      res.status(500).send({ message: `Ошибка на сервере ${err.name}: ${err.message}` });
-    });
+    .catch(next);
 };
 
 const getUserById = (req, res) => {
@@ -18,15 +20,15 @@ const getUserById = (req, res) => {
       if (user) {
         res.send(user);
       } else {
-        res.status(404).send({ message: 'Пользователь по указанному _id не найден' });
+        throw new NotFoundError('Пользователь по указанному _id не найден');
       }
     })
     .catch((err) => {
       if (err instanceof mongoose.Error.CastError) {
-        res.status(400).send({ message: 'Некорректный запрос по id, пользователь не найден' });
-        return;
+        next(new BadRequestError('Некорректный запрос по id, пользователь не найден'));
+      } else {
+        next(err);
       }
-      res.status(500).send({ message: `Ошибка на сервере ${err.name}: ${err.message}` });
     });
 };
 
@@ -36,15 +38,15 @@ const getCurrentUser = async (req, res) => {
       if (user) {
         res.send(user);
       } else {
-        res.status(404).send({ message: 'Пользователь по указанному _id не найден' });
+        throw new NotFoundError('Пользователь по указанному _id не найден');
       }
     })
     .catch((err) => {
       if (err instanceof mongoose.Error.CastError) {
-        res.status(400).send({ message: 'Некорректный запрос по id: пользователь не найден' });
-        return;
+        next(new BadRequestError('Некорректный запрос по id, пользователь не найден'));
+      } else {
+        next(err);
       }
-      res.status(500).send({ message: `Ошибка на сервере ${err.name}: ${err.message}` });
     });
 };
 
@@ -53,8 +55,7 @@ const createUser = async (req, res) => {
     name, about, avatar, email, password,
   } = req.body;
   if (!password) {
-    res.status(400).send({ message: 'Переданы некорректные данные при создании пользователя' });
-    return;
+    throw new BadRequestError('Переданы некорректные данные при создании пользователя');
   }
   bcrypt.hash(password, 10)
     .then((hash) => {
@@ -71,11 +72,14 @@ const createUser = async (req, res) => {
           });
         })
         .catch((err) => {
+          if (err.code === 11000) {
+            next(new ConflictError('Пользователь с данным email уже зарегистрирован'));
+          } else
           if (err instanceof mongoose.Error.ValidationError) {
-            res.status(400).send({ message: `Переданы некорректные данные при создании пользователя: ${err.message}` });
-            return;
+            next(new BadRequestError('Переданы некорректные данные при создании пользователя'));
+          } else {
+            next(err);
           }
-          res.status(500).send({ message: `Ошибка на сервере ${err.name}: ${err.message}` });
         });
     });
 };
@@ -87,15 +91,15 @@ const updateUser = (req, res) => {
       if (user) {
         res.send(user);
       } else {
-        res.status(404).send({ message: 'Пользователь по указанному _id не найден' });
+        throw new NotFoundError('Пользователь по указанному _id не найден');
       }
     })
     .catch((err) => {
       if (err instanceof mongoose.Error.ValidationError) {
-        res.status(400).send({ message: `Переданы некорректные данные при обновлении профиля: ${err.message}` });
-        return;
+        next(new BadRequestError('Переданы некорректные данные при обновлении профиля'));
+      } else {
+        next(err);
       }
-      res.status(500).send({ message: `Ошибка на сервере ${err.name}: ${err.message}` });
     });
 };
 
@@ -106,15 +110,15 @@ const updateAvatar = (req, res) => {
       if (user) {
         res.send(user);
       } else {
-        res.status(404).send({ message: 'Пользователь по указанному _id не найден' });
+        throw new NotFoundError('Пользователь по указанному _id не найден');
       }
     })
     .catch((err) => {
       if (err instanceof mongoose.Error.ValidationError) {
-        res.status(400).send({ message: 'Переданы некорректные данные при обновлении аватара' });
-        return;
+        next(new BadRequestError('Переданы некорректные данные при обновлении аватара'));
+      } else {
+        next(err);
       }
-      res.status(500).send({ message: `Ошибка на сервере ${err.name}: ${err.message}` });
     });
 };
 
@@ -126,9 +130,7 @@ const login = (req, res) => {
       res.send({ token });
     })
     .catch((err) => {
-      res
-        .status(401)
-        .send({ message: err.message });
+      next(new UnauthorizedError(err.message));
     });
 };
 
