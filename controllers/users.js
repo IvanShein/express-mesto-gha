@@ -40,22 +40,13 @@ const getCurrentUser = (req, res, next) => {
         throw new NotFoundError('Пользователь по указанному _id не найден');
       }
     })
-    .catch((err) => {
-      if (err instanceof mongoose.Error.CastError) {
-        next(new BadRequestError('Некорректный запрос по id, пользователь не найден'));
-      } else {
-        next(err);
-      }
-    });
+    .catch(next);
 };
 
 const createUser = (req, res, next) => {
   const {
     name, about, avatar, email, password,
   } = req.body;
-  if (!password) {
-    throw new BadRequestError('Переданы некорректные данные при создании пользователя');
-  }
   bcrypt.hash(password, 10)
     .then((hash) => {
       Users.create({
@@ -73,8 +64,7 @@ const createUser = (req, res, next) => {
         .catch((err) => {
           if (err.code === 11000) {
             next(new ConflictError('Пользователь с данным email уже зарегистрирован'));
-          } else
-          if (err instanceof mongoose.Error.ValidationError) {
+          } else if (err instanceof mongoose.Error.ValidationError) {
             next(new BadRequestError('Переданы некорректные данные при создании пользователя'));
           } else {
             next(err);
